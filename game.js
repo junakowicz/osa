@@ -32,6 +32,12 @@ var ACCLERATION = 600;
 var DRAG = 400;
 var MAXSPEED = 400;
 
+
+var explosionSound;
+var smallExplosionSound;
+var sword;
+var blasterSound;
+
 function preload() {
     game.load.image('starfield', 'assets/sky1.jpg');
     game.load.image('ship', 'assets/osa.png');
@@ -43,6 +49,11 @@ function preload() {
     game.load.bitmapFont('spacefont', 'assets/spacefont/spacefont.png', 'https://rawgit.com/jschomay/phaser-demo-game/master/assets/spacefont/spacefont.xml');  
     game.load.image('boss', 'assets/boss1.png');
     game.load.image('deathRay', 'assets/death-ray.png');
+
+    game.load.audio('explosionSound', 'assets/audio/explosion.mp3');
+    game.load.audio('smallExplosionSound', 'assets/audio/small_explosion.mp3');
+    // game.load.audio('sword', 'assets/audio/SoundEffects/sword.mp3');
+    game.load.audio('blasterSound', 'assets/audio/blaster.mp3');
 }
 
 function create() {
@@ -327,22 +338,31 @@ function create() {
     //  Shields stat
     shields = game.add.bitmapText(game.world.width - 250, 10, 'spacefont', '' + player.health +'%', 50);
     shields.render = function () {
-        shields.text = 'Shields: ' + Math.max(player.health, 0) +'%';
+        shields.text = 'Tarcza: ' + Math.max(player.health, 0) +'%';
     };
     shields.render();
 
     //  Score
     scoreText = game.add.bitmapText(10, 10, 'spacefont', '', 50);
     scoreText.render = function () {
-        scoreText.text = 'Score: ' + score;
+        scoreText.text = 'Wynik: ' + score;
     };
     scoreText.render();
 
     //  Game over text
-    gameOver = game.add.bitmapText(game.world.centerX, game.world.centerY, 'spacefont', 'GAME OVER!', 110);
+    gameOver = game.add.bitmapText(game.world.centerX, game.world.centerY, 'spacefont', 'KONIEC GRY!', 110);
     gameOver.x = gameOver.x - gameOver.textWidth / 2;
     gameOver.y = gameOver.y - gameOver.textHeight / 3;
     gameOver.visible = false;
+
+
+    explosionSound = game.add.audio('explosionSound');
+    smallExplosionSound = game.add.audio('smallExplosionSound');
+    sword = game.add.audio('sword');
+    blasterSound = game.add.audio('blasterSound');
+
+
+    game.sound.setDecodedCallback([ explosionSound,smallExplosionSound, sword, blasterSound ], start, this);
 }
 
 function update() {
@@ -374,17 +394,18 @@ function update() {
     //  Fire bullet
     if (player.alive && (fireButton.isDown || game.input.activePointer.isDown)) {
         fireBullet();
+        
     }
 
     //  Move ship towards mouse pointer
-    if (game.input.x < game.width - 20 &&
-        game.input.x > 20 &&
-        game.input.y > 20 &&
-        game.input.y < game.height - 20) {
-        var minDist = 200;
-        var dist = game.input.x - player.x;
-        player.body.velocity.x = MAXSPEED * game.math.clamp(dist / minDist, -1, 1);
-    }
+    // if (game.input.x < game.width - 20 &&
+    //     game.input.x > 20 &&
+    //     game.input.y > 20 &&
+    //     game.input.y < game.height - 20) {
+    //     var minDist = 200;
+    //     var dist = game.input.x - player.x;
+    //     player.body.velocity.x = MAXSPEED * game.math.clamp(dist / minDist, -1, 1);
+    // }
 
     //  Squish and rotate ship for illusion of "banking"
     bank = player.body.velocity.x / MAXSPEED;
@@ -457,9 +478,10 @@ function fireBullet() {
                 bullet.angle = 0;
                 game.physics.arcade.velocityFromAngle(bullet.angle - 90, BULLET_SPEED, bullet.body.velocity);
                 // game.physics.arcade.velocityFromAngle(bullet.angle - 90, BULLET_SPEED, bullet.body.velocity);
-                bullet.body.velocity.x += player.body.velocity.x;
+                // bullet.body.velocity.x += player.body.velocity.x;
 
                 bulletTimer = game.time.now + BULLET_SPACING;
+                blasterSound.play();
             }
         }
         break;
@@ -478,12 +500,12 @@ function fireBullet() {
                     bullet.reset(player.x + bulletOffset, player.y);
                     //  "Spread" angle of 1st and 3rd bullets
                     var spreadAngle;
-                    if (i === 0) spreadAngle = -20;
+                    if (i === 0) spreadAngle = -7;
                     if (i === 1) spreadAngle = 0;
-                    if (i === 2) spreadAngle = 20;
+                    if (i === 2) spreadAngle = 7;
                     bullet.angle = player.angle + spreadAngle;
                     game.physics.arcade.velocityFromAngle(spreadAngle - 90, BULLET_SPEED, bullet.body.velocity);
-                    bullet.body.velocity.x += player.body.velocity.x;
+                    // bullet.body.velocity.x += player.body.velocity.x;
                 }
                 bulletTimer = game.time.now + BULLET_SPACING;
             }
@@ -613,6 +635,7 @@ function shipCollide(player, enemy) {
         explosion.reset(player.body.x + player.body.halfWidth, player.body.y + player.body.halfHeight);
         explosion.alpha = 0.7;
         explosion.play('explosion', 30, false, true);
+        explosionSound.play()
     } else {
         playerDeath.x = player.x;
         playerDeath.y = player.y;
@@ -627,6 +650,7 @@ function hitEnemy(enemy, bullet) {
     explosion.body.velocity.y = enemy.body.velocity.y;
     explosion.alpha = 0.7;
     explosion.play('explosion', 30, false, true);
+    smallExplosionSound.play()
     if (enemy.finishOff && enemy.health < 5) {
       enemy.finishOff();
     } else {
@@ -691,6 +715,7 @@ function enemyHitsPlayer (player, bullet) {
         explosion.reset(player.body.x + player.body.halfWidth, player.body.y + player.body.halfHeight);
         explosion.alpha = 0.7;
         explosion.play('explosion', 30, false, true);
+        explosionSound.play()
     } else {
         playerDeath.x = player.x;
         playerDeath.y = player.y;
