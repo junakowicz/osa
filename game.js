@@ -1,4 +1,4 @@
-var game = new Phaser.Game(800,600, Phaser.AUTO, 'phaser-demo', {preload: preload, create: create, update: update, render: render});
+var game = new Phaser.Game(800,1000, Phaser.AUTO, 'phaser-demo', {preload: preload, create: create, update: update, render: render});
 
 var player;
 var greenEnemies;
@@ -33,21 +33,21 @@ var DRAG = 400;
 var MAXSPEED = 400;
 
 function preload() {
-    game.load.image('starfield', 'assets/starfield.png');
-    game.load.image('ship', 'assets/player.png');
-    game.load.image('bullet', 'assets/bullet.png');
-    game.load.image('enemy-green', 'assets/enemy-green.png');
-    game.load.image('enemy-blue', 'assets/enemy-blue.png');
+    game.load.image('starfield', 'assets/sky1.jpg');
+    game.load.image('ship', 'assets/osa.png');
+    game.load.image('bullet', 'assets/kula.png');
+    game.load.image('enemy-green', 'assets/statek.png');
+    game.load.image('enemy-blue', 'assets/statek2.png');
     game.load.image('blueEnemyBullet', 'assets/enemy-blue-bullet.png');
     game.load.spritesheet('explosion', 'assets/explode.png', 128, 128);
     game.load.bitmapFont('spacefont', 'assets/spacefont/spacefont.png', 'https://rawgit.com/jschomay/phaser-demo-game/master/assets/spacefont/spacefont.xml');  
-    game.load.image('boss', 'assets/boss.png');
+    game.load.image('boss', 'assets/boss1.png');
     game.load.image('deathRay', 'assets/death-ray.png');
 }
 
 function create() {
     //  The scrolling starfield background
-    starfield = game.add.tileSprite(0, 0, 800, 600, 'starfield');
+    starfield = game.add.tileSprite(0, 0, 800, 1000, 'starfield');
 
     //  Our bullet group
     bullets = game.add.group();
@@ -60,7 +60,7 @@ function create() {
     bullets.setAll('checkWorldBounds', true);
 
     //  The hero!
-    player = game.add.sprite(400, 500, 'ship');
+    player = game.add.sprite(400, 900, 'ship');
     player.health = 100;
     player.anchor.setTo(0.5, 0.5);
     game.physics.enable(player, Phaser.Physics.ARCADE);
@@ -129,7 +129,7 @@ function create() {
     boss.exists = false;
     boss.alive = false;
     boss.anchor.setTo(0.5, 0.5);
-    boss.damageAmount = 50;
+    boss.damageAmount = 20;
     boss.angle = 180;
     boss.scale.x = 0.6;
     boss.scale.y = 0.6;
@@ -453,8 +453,10 @@ function fireBullet() {
                 //  Make bullet come out of tip of ship with right angle
                 var bulletOffset = 20 * Math.sin(game.math.degToRad(player.angle));
                 bullet.reset(player.x + bulletOffset, player.y);
-                bullet.angle = player.angle;
+                // bullet.angle = player.angle;
+                bullet.angle = 0;
                 game.physics.arcade.velocityFromAngle(bullet.angle - 90, BULLET_SPEED, bullet.body.velocity);
+                // game.physics.arcade.velocityFromAngle(bullet.angle - 90, BULLET_SPEED, bullet.body.velocity);
                 bullet.body.velocity.x += player.body.velocity.x;
 
                 bulletTimer = game.time.now + BULLET_SPACING;
@@ -491,7 +493,7 @@ function fireBullet() {
 
 
 function launchGreenEnemy() {
-    var ENEMY_SPEED = 300;
+    var ENEMY_SPEED = 200;
 
     var enemy = greenEnemies.getFirstExists(false);
     if (enemy) {
