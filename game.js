@@ -59,7 +59,7 @@ function preload() {
 function create() {
     //  The scrolling starfield background
     starfield = game.add.tileSprite(0, 0, 800, 1000, 'starfield');
-
+    game.input.addPointer();
     //  Our bullet group
     bullets = game.add.group();
     bullets.enableBody = true;
@@ -338,19 +338,19 @@ function create() {
     //  Shields stat
     shields = game.add.bitmapText(game.world.width - 250, 10, 'spacefont', '' + player.health +'%', 50);
     shields.render = function () {
-        shields.text = 'Tarcza: ' + Math.max(player.health, 0) +'%';
+        shields.text = ': ' + Math.max(player.health, 0) +'%';
     };
     shields.render();
 
     //  Score
     scoreText = game.add.bitmapText(10, 10, 'spacefont', '', 50);
     scoreText.render = function () {
-        scoreText.text = 'Wynik: ' + score;
+        scoreText.text = ': ' + score;
     };
     scoreText.render();
 
     //  Game over text
-    gameOver = game.add.bitmapText(game.world.centerX, game.world.centerY, 'spacefont', 'KONIEC GRY!', 110);
+    gameOver = game.add.bitmapText(game.world.centerX, game.world.centerY, 'spacefont', 'O NIE!', 110);
     gameOver.x = gameOver.x - gameOver.textWidth / 2;
     gameOver.y = gameOver.y - gameOver.textHeight / 3;
     gameOver.visible = false;
@@ -398,14 +398,14 @@ function update() {
     }
 
     //  Move ship towards mouse pointer
-    // if (game.input.x < game.width - 20 &&
-    //     game.input.x > 20 &&
-    //     game.input.y > 20 &&
-    //     game.input.y < game.height - 20) {
-    //     var minDist = 200;
-    //     var dist = game.input.x - player.x;
-    //     player.body.velocity.x = MAXSPEED * game.math.clamp(dist / minDist, -1, 1);
-    // }
+    if (game.input.x < game.width - 20 &&
+        game.input.x > 20 &&
+        game.input.y > 20 &&
+        game.input.y < game.height - 20) {
+        var minDist = 200;
+        var dist = game.input.x - player.x;
+        player.body.velocity.x = MAXSPEED * game.math.clamp(dist / minDist, -1, 1);
+    }
 
     //  Squish and rotate ship for illusion of "banking"
     bank = player.body.velocity.x / MAXSPEED;
